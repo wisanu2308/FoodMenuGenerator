@@ -38,6 +38,17 @@ app.post('/webhook', async (req, res) => {
     res.sendStatus(200);
 });
 
+// สร้างไฟล์ Service Account จาก ENV BASE64 (สำหรับ Render)
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64) {
+    const fs = require('fs');
+    const path = './chatbot-bmi-khyf-daedf8164ece.json';
+    fs.writeFileSync(
+        path,
+        Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64, 'base64').toString('utf-8')
+    );
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = path;
+}
+
 app.listen(3000, () => {
     console.log('🚀 Webhook server is running on port 3000');
 });
