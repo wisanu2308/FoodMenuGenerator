@@ -29,10 +29,14 @@ async function detectIntent(userId, text) {
                 },
             }
         );
-        return response.data.queryResult.fulfillmentText;
+        const result = response.data.queryResult;
+        return {
+            fulfillmentText: result.fulfillmentText,
+            intent: result.intent ? result.intent.displayName : null
+        };
     } catch (err) {
         console.error('❌ Dialogflow Error:', err.message);
-        return '';
+        return { fulfillmentText: '', intent: null };
     }
 }
 

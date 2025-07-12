@@ -28,8 +28,11 @@ app.post('/webhook', async (req, res) => {
         if (event.type === 'message' && event.message.type === 'text') {
             const userMessage = event.message.text;
             const replyToken = event.replyToken;
-            let replyText = await detectIntent(event.source.userId, userMessage);
-            if (!replyText) {
+            const { fulfillmentText, intent } = await detectIntent(event.source.userId, userMessage);
+
+            let replyText = fulfillmentText;
+            // ถ้า intent คือ "ขอเมนูอื่น" หรือ intent ที่เกี่ยวกับเมนูใหม่
+            if (intent === 'ขอเมนูอื่น' || intent === 'ขออีกเมนู' || !replyText) {
                 replyText = getRandomMenu();
             }
             await replyMessage(replyToken, replyText);
