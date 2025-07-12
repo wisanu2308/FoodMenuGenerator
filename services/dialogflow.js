@@ -29,6 +29,9 @@ async function detectIntent(userId, text) {
                 },
             }
         );
+
+        // console.log('Dialogflow API raw response:', JSON.stringify(response.data, null, 2));
+        
         const result = response.data.queryResult;
         return {
             fulfillmentText: result.fulfillmentText,

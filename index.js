@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const bodyParser = require('body-parser');
 
 const { detectIntent } = require('./services/dialogflow');
-const { replyMessage } = require('./services/line');
+const { replyMessage, replyYesNo, replySticker } = require('./services/line');
 
 const app = express();
 app.use(bodyParser.json());
@@ -37,11 +37,20 @@ app.post('/webhook', async (req, res) => {
         if (event.type === 'message' && event.message.type === 'text') {
             const userMessage = event.message.text;
             const replyToken = event.replyToken;
-            const { fulfillmentText } = await detectIntent(event.source.userId, userMessage);
+            const { fulfillmentText, intent } = await detectIntent(event.source.userId, userMessage);
+            console.log('Intent:', intent, 'Fulfillment:', fulfillmentText);
 
-            // สุ่ม fallback ถ้า Dialogflow ไม่ตอบ
+            // // ตัวอย่าง: ถ้า fulfillmentText มีคำว่า "ใช่หรือไม่" ให้ส่ง quick reply yes/no
+            // if (fulfillmentText && fulfillmentText.includes('ใช่หรือไม่')) {
+            //     await replyYesNo(replyToken, fulfillmentText);
+            // }
+            // // ตัวอย่าง: ถ้า fulfillmentText มีคำว่า "ส่งสติ๊กเกอร์" ให้ส่งสติ๊กเกอร์
+            // else if (fulfillmentText && fulfillmentText.includes('ส่งสติ๊กเกอร์')) {
+            //     await replySticker(replyToken);
+            // }
+
+            // ปกติ: ตอบข้อความ
             let replyText = fulfillmentText || fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
-
             await replyMessage(replyToken, replyText);
         }
     }
