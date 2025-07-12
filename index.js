@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 
 const { detectIntent } = require('./services/dialogflow');
 const { replyMessage } = require('./services/line');
-const { getRandomMenu } = require('./services/menu');
 
 const app = express();
 app.use(bodyParser.json());
@@ -22,19 +21,27 @@ const validateSignature = (req) => {
     return signature === req.headers['x-line-signature'];
 };
 
+const fallbackReplies = [
+    'ขออภัยค่ะ ขอคำถามใหม่อีกครั้งได้ไหมคะ',
+    'ขอโทษค่ะ ยังไม่เข้าใจ ลองถามอีกทีนะคะ',
+    'ขออภัยค่ะ ช่วยอธิบายเพิ่มเติมได้ไหมคะ',
+    'ขอโทษค่ะ ฉันยังตอบไม่ได้ ลองถามใหม่อีกครั้งนะคะ',
+    'ขออภัยค่ะ ขอรายละเอียดเพิ่มเติมหน่อยค่ะ',
+    'หากต้องการแนะนำเมนูอาหาร กรุณาพิมพ์ "แนะนำเมนู" หรือถามสิ่งที่อยากกินได้เลยค่ะ',
+    'ลองบอกประเภทอาหารหรือชื่อเมนูที่สนใจได้นะคะ'
+];
+
 app.post('/webhook', async (req, res) => {
     const events = req.body.events;
     for (const event of events) {
         if (event.type === 'message' && event.message.type === 'text') {
             const userMessage = event.message.text;
             const replyToken = event.replyToken;
-            const { fulfillmentText, intent } = await detectIntent(event.source.userId, userMessage);
+            const { fulfillmentText } = await detectIntent(event.source.userId, userMessage);
 
-            let replyText = fulfillmentText;
-            // ถ้า intent คือ "ขอเมนูอื่น" หรือ intent ที่เกี่ยวกับเมนูใหม่
-            if (intent === 'ขอเมนูอื่น' || intent === 'ขออีกเมนู' || !replyText) {
-                replyText = getRandomMenu();
-            }
+            // สุ่ม fallback ถ้า Dialogflow ไม่ตอบ
+            let replyText = fulfillmentText || fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
+
             await replyMessage(replyToken, replyText);
         }
     }
