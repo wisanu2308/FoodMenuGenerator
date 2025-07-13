@@ -89,4 +89,28 @@ async function replySticker(replyToken, packageId = '11537', stickerId = '520027
     }
 }
 
-module.exports = { replyMessage, replyYesNo, replySticker };
+async function replyTextWithQuickReply(replyToken, text, quickReply) {
+    try {
+        await axios.post(
+            'https://api.line.me/v2/bot/message/reply',
+            {
+                replyToken: replyToken,
+                messages: [{
+                    type: 'text',
+                    text,
+                    quickReply
+                }],
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+    } catch (err) {
+        console.error('❌ LINE Reply Error:', err.message);
+    }
+}
+
+module.exports = { replyMessage, replyYesNo, replySticker, replyTextWithQuickReply };
